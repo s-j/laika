@@ -74,6 +74,7 @@ public TPKernelHPQP(String[] args){
 
 public void boot(){
 	//SimpleStats.init("blocks","chunks","docs","scors","accin","accout");
+	Constants.MAX_NUMBER_OF_RESULTS=100;
 	if (isRootNode){
 		isRootNode = true;
 		CntBarrier barrier = new CntBarrier(server, ApplicationHandler.READY, numworkers);

@@ -204,6 +204,7 @@ public class DPQueryDispatcher implements Runnable, Closeable, MessageHandler{
 						qres[j] = qres[j+1];
 				}
 			}
+			long end = System.currentTimeMillis();
 			
 			/*
 			StringBuilder sb = new StringBuilder();
@@ -213,7 +214,6 @@ public class DPQueryDispatcher implements Runnable, Closeable, MessageHandler{
 			System.out.println(qid + sb.toString() + "\n" + (double)(end-start)/1000);
 			*/
 			
-			long end = System.currentTimeMillis();
 			totalPostprocessingTime.addAndGet(end-start);
 			qresults[qid] = null;	//clean results...
 			if (qid >= pre && qid < stopAfter){

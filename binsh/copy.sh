@@ -6,9 +6,10 @@
 #$ -j y
 #$ -cwd
 index=/export/work/simonj/index-dp
+numnodes=8
 
 #copy files
-for i in $(seq 0 7)
+for i in $(seq 0 $(($numnodes-1)))
 do
 	hostname=compute-0-$i
 	echo Storing files on $hostname

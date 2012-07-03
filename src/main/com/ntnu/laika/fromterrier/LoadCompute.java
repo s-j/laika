@@ -22,7 +22,7 @@ public class LoadCompute {
 		index.loadFastMaxScores(stats.getNumberOfUniqueTerms());
 		Lexicon lexicon = index.getLexicon(stats.getNumberOfUniqueTerms());
 		
-		String line; int i=0;
+		String line;
 		reader.readLine();
 		double fqavg = 1.137;
 		double ftavg = 997967.6;		

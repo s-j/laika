@@ -24,4 +24,6 @@ public final class Constants {
 	public static int MAX_QUERY_LENGTH = 25;
 	public static int MAX_NUMBER_OF_RESULTS = 100;
 	public static boolean USE_SKIPS = true;
+	
+	public static int WORKERS_CNT = 8;
 }

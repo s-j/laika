@@ -138,9 +138,8 @@ public class NewPForEncoding {
         }
 
         private void padRemainingSlots(int frameOfReference, int startAt, int valuesOffset, int[] values){
-        	int startPad = valuesOffset+startAt;
-        	for (int i = startPad; i < startPad+128; i++){
-                values[i] = frameOfReference;
+        	for (int i = startAt; i < 128; i++){
+                values[valuesOffset + i] = frameOfReference;
             }
         }
 

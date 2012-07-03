@@ -71,7 +71,8 @@ public class Index implements Closeable{
 			Constants.STRING_BYTE_LENGTH = Integer.parseInt(
 					indexProperties.getProperty("index.maxTermLength",""+Constants.STRING_BYTE_LENGTH));
 			Constants.DOCNO_BYTE_LENGTH = Integer.parseInt(
-					indexProperties.getProperty("intdex.maxDocnoLength",""+Constants.DOCNO_BYTE_LENGTH));		
+					indexProperties.getProperty("intdex.maxDocnoLength",""+Constants.DOCNO_BYTE_LENGTH));
+			Constants.WORKERS_CNT = Integer.parseInt(indexProperties.getProperty("workerscnt",""+Constants.WORKERS_CNT));
 		} catch (FileNotFoundException e) {
 			stats = new Statistics(0, 0, 0, 0);
 		} catch (IOException e) {

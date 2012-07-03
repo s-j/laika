@@ -26,7 +26,7 @@ public class TPMasterQueryPreprocessingHPQP implements Closeable{
 	public TPMasterQueryPreprocessingHPQP(GlobalLexicon lexicon){
 		System.out.println("use GLB: " + isGLB);
 		this.lexicon = lexicon;
-		loads = new long[GlobalLexiconEntry.MAX_NODES_SUPPORTED];
+		loads = new long[Constants.WORKERS_CNT];
 	}
 	
 	public class MasterQuery {
@@ -160,7 +160,7 @@ public class TPMasterQueryPreprocessingHPQP implements Closeable{
 		int numTerms = terms.length;
 		if (numTerms == 0) return null;
 		
-		final int NODES = GlobalLexiconEntry.MAX_NODES_SUPPORTED;
+		final int NODES = Constants.WORKERS_CNT;
 		//take all normal terms, and leave replicated terms
 		GlobalLexiconEntry _lEntry = null;
 		MasterQueryEntry _mqEntry = null;
@@ -203,8 +203,9 @@ public class TPMasterQueryPreprocessingHPQP implements Closeable{
 		for (int i=0; i<numReplicatedTerms; i++){
 			_mqEntry = replicatedEntries[i];
 			//_nodeids = (new BitVector(_mqEntry.lexiconEntry.getSignature())).getIDs();
-			_nodeid = isGLB ? leastLoadedNode() : leastLoadedNode(nmask);
+			//printMask(nmask);
 			//printLoads();
+			_nodeid = isGLB ? leastLoadedNode() : leastLoadedNode(nmask);
 			//System.out.println(_mqEntry.lexiconEntry.getTerm() +"->" +_nodeid);
 			entries[_nodeid][counts[_nodeid]++] = _mqEntry;
 			loads[_nodeid] += _mqEntry.lexiconEntry.getN_t();
@@ -225,6 +226,11 @@ public class TPMasterQueryPreprocessingHPQP implements Closeable{
 		return new MasterQuery(ret, numSubqueries, numTerms, maxKeyFreq);
 	}
 
+	protected void printMask(boolean nmask[]) {
+		for (int i=0; i<nmask.length; i++) System.out.print(i+": "+ nmask[i]+"\t");
+		System.out.println();
+	}
+	
 	protected void printLoads() {
 		for (int i=0; i<loads.length; i++) System.out.print(i+": "+ loads[i]+"\t");
 		System.out.println();

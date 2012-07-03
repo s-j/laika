@@ -20,7 +20,7 @@ import com.ntnu.laika.utils.BitVector;
  * @author <a href="mailto:simonj@idi.ntnu.no">Simon Jonassen</a>
  * @version $Id $.
  */
-public class SplitConverterDP {
+public class SplitConverterTPHPQP {
 
 	private class IndexWrapper{
 		protected com.ntnu.laika.structures.LocalIndex index;
@@ -60,63 +60,54 @@ public class SplitConverterDP {
 		}
 	}
 	
-	public SplitConverterDP(String src, String mainpath, int numnodes) throws IOException, InterruptedException{
+	public SplitConverterTPHPQP(String lexmap, String src, String mainpath, int numnodes) throws IOException, InterruptedException{
+		TPLexMapping map = new TPLexMapping(lexmap, numnodes);
+		System.out.println("map is loaded...");
 		Index input_index = new com.ntnu.laika.structures.Index(src);
 		Statistics stats = input_index.getStatistics();
 		int numterms = stats.getNumberOfUniqueTerms();
 		PostingListInputStream plis = input_index.getPostingListInputStream(numterms); 
 		
-		//Constants.USE_SKIPS = true;
+		Constants.USE_SKIPS = true;
 		Runtime.getRuntime().exec("mkdir " + mainpath).waitFor();
 		Runtime.getRuntime().exec("mkdir " + mainpath + "0/").waitFor();
 		
 		MasterIndex mindex = new MasterIndex(mainpath+"0/");
 		GlobalLexiconOutputStream glos = mindex.getGlobalLexiconOutputStream();
-				
-		IndexWrapper wrappers[] = new IndexWrapper[8];
+	
+		IndexWrapper wrappers[] = new IndexWrapper[numnodes];
 		for (int i=1; i<=numnodes; i++){
 			Runtime.getRuntime().exec("mkdir " + mainpath + i + "/").waitFor();
 			wrappers[i-1] = new IndexWrapper(mainpath + i, stats.getNumberOfDocuments());
 		}
 		
+		int rr = 0;
+		int NODES = GlobalLexiconEntry.MAX_NODES_SUPPORTED;
 		for (int i=0; i<numterms; i++){
 			LexiconEntry _lE = plis.nextEntry();
 			String term = _lE.getTerm();
 			int nt = _lE.getN_t();
 			int tf = _lE.getTF();
 			
-			//PARTITIONING START
-			//partition postings...
-			int[][][] scores = new int[numnodes][2][nt];
-			int[][] counts = new int[numnodes][2];
-			int docid, freq, destnode;
+			int[][] scores = new int[2][nt];
 			for (int k=0; k<nt; k++){
-				docid = plis.getDocId(); freq = plis.getFrequency();
-				
-				destnode = docid % numnodes;
-				scores[destnode][0][counts[destnode][0]] = docid;
-				scores[destnode][1][counts[destnode][0]] = freq;
-				counts[destnode][0]++; 
-				counts[destnode][1]+=freq;
-				
+				scores[0][k] = plis.getDocId();
+				scores[1][k] = plis.getFrequency();
 				plis.next();
 			}
 			
-			//write lists and calculate the signature...
-			BitVector bv = new BitVector(GlobalLexiconEntry.MAX_NODES_SUPPORTED);
-			for (int k=0; k<numnodes; k++){
-				int _nt = counts[k][0];
-				if (_nt > 0) {
-					int _tf = counts[k][1];
-					wrappers[k].nextEntry(term, i, _nt, _tf, scores[k]);
-					bv.setBit(k);
-				}
+			BitVector bv = map.getBitVector(term);
+			if (bv == null) {
+				bv = new BitVector(NODES,rr);
+				if (++rr >= numnodes) rr = 0;
+			}
+			for (int destnode : bv.getIDs()){
+				wrappers[destnode].nextEntry(term, i, nt, tf, scores);	
 			}
 			
-			//write the global mapping
+			//write  global mapping
 			glos.nextEntry(term, i, nt, tf, bv.data);
-			
-			//PARTITIONING END
+	
 			if (i % 1000000 == 0) System.out.println((100 * i)/numterms + "%");
 		}
 		plis.close();
@@ -135,7 +126,7 @@ public class SplitConverterDP {
 
 		Properties props = mindex.getIndexProperties();
 		
-		//props.setProperty("use_skips", Constants.USE_SKIPS+"");
+		props.setProperty("use_skips", Constants.USE_SKIPS+"");
 		props.setProperty("id", "0");
 		props.setProperty("workerscnt", numnodes+"");
 		mindex.setStatistics(global);
@@ -144,20 +135,22 @@ public class SplitConverterDP {
 	
 	
 	public static void main(String args[]) throws IOException, InterruptedException{
+		String mapping = "/home/simonj/workstuff/2012/Enver/partvec_term/partvec_term.4.HP.CUT.RNO";
 		String idxsrc = "/mnt/data/data/laika_v2/index/";
-		String idxdst = "/home/simonj/index-dp/";
-		int numnodes = 8;
+		String idxdst = "/mnt/data/data/ENVERIDX/4.HP.CUT.RNO/";
+		int numnodes = 4;
 		
 		//idx, lex and properties
-		Runtime.getRuntime().exec("mkdir " + idxdst).waitFor();
 		System.out.println("splitting index: creating subdirectories, inverted and lexicon files");
-		new SplitConverterDP(idxsrc, idxdst, numnodes);
+		new SplitConverterTPHPQP(mapping, idxsrc, idxdst, numnodes);
 		
 		//queries
 		//System.out.println("copying query sets");
 		//Runtime.getRuntime().exec("cp " + idxsrc + "qrels.tb06.top50 " + idxdst + "0/").waitFor();
 		//Runtime.getRuntime().exec("cp " + idxsrc + "queries801-850 " + idxdst + "0/").waitFor();
 		//Runtime.getRuntime().exec("cp " + idxsrc + "querylog.test " + idxdst + "0/").waitFor();
+		Runtime.getRuntime().exec("cp /mnt/data/data/ENVERIDX/querylog.test " + idxdst + "0/").waitFor();
+		
 		//doc
 		System.out.println("copying the main document dictionary");
 		Runtime.getRuntime().exec("cp " + idxsrc + "index.doc " + idxdst + "0/").waitFor();

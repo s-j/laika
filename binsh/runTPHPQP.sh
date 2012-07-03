@@ -1,5 +1,5 @@
 #!/bin/bash
-#$ -N dogsled 
+#$ -N laika 
 #$ -S /bin/bash
 #$ -pe mpich 8 
 #$ -V
@@ -7,8 +7,9 @@
 #$ -cwd
 runs=($(cat ~/todo))
 run=${runs[0]}
-
 hostname="clustis3"
+numnodes=8
+
 echo Running server on $hostname
 ssh simonj@$hostname "/share/apps/dropcache"
 ssh simonj@$hostname "cp -r ~/Laika/lib /tmp/playground/"
@@ -16,7 +17,7 @@ ssh simonj@$hostname "cp -r ~/Laika/bin /tmp/playground/"
 ssh simonj@$hostname "cp -r ~/Laika/binsh/kernelTPHPQP.sh /tmp/playground/kernel.sh"
 ssh simonj@$hostname "/tmp/playground/kernel.sh 12339/- /tmp/playground/data/ $run" &
 
-for i in $(seq 0 7)
+for i in $(seq 0 $(($numnodes-1)))
 do
 	hostname=compute-0-$i
 	portnr=$(($i+12340))
@@ -31,7 +32,7 @@ done
 wait
 
 #delete files
-for i in $(seq 0 7)
+for i in $(seq 0 $(($numnodes-1)))
 do
 	hostname=compute-0-$i
  	ssh simonj@$hostname "pkill -f Kernel"
