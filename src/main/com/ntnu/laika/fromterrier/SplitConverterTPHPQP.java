@@ -135,9 +135,9 @@ public class SplitConverterTPHPQP {
 	
 	
 	public static void main(String args[]) throws IOException, InterruptedException{
-		String mapping = "/home/simonj/workstuff/2012/Enver/partvec_term/partvec_term.4.HP.CUT.RNO";
+		String mapping = "/home/simonj/workstuff/2012/Enver/partvec_term/partvec_term.4.HP.CON.RYES";
 		String idxsrc = "/mnt/data/data/laika_v2/index/";
-		String idxdst = "/mnt/data/data/ENVERIDX/4.HP.CUT.RNO/";
+		String idxdst = "/mnt/data/data/ENVERIDX/4.HP.CON.RYES/";
 		int numnodes = 4;
 		
 		//idx, lex and properties

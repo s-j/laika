@@ -160,7 +160,7 @@ public class TPQueryDispatcherHPQP implements Runnable, Closeable, MessageHandle
 						int docids[] = results.getDocids();
 						double scores[] = results.getScores();
 						int nump = docids.length < 100 ? docids.length : 100; 
-						for (int i=0;i<nump;i++){
+						for (int i=nump-5;i<nump;i++){
 							sb.append("\n"+i+ " " + docids[i]+" "+scores[i]);
 						}
 						System.out.println(sb.toString());
