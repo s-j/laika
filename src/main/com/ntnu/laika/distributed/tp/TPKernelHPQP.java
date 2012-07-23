@@ -90,14 +90,14 @@ public void boot(){
 		
 		TPMasterQueryPreprocessingHPQP.isGLB = subargs[3].equals("glb");
 		processortype = subargs[4].equals("and") ? AND : MSDOR;
-		System.out.println((processortype==AND)?"(and)":"(or)" + subargs[3]);
-		if (subargs.length > 5 && subargs[5].equals("testing")){
-			System.out.println("testing");
-			testing = true;
-		}
+		System.out.println((processortype==AND)?"(and)":"(or)" + subargs[3]+" testlog: " + (subargs.length > 5 ? subargs[5] : ""));
+		//if (subargs.length > 5 && subargs[5].equals("testing")){
+		//	System.out.println("testing");
+		//	testing = true;
+		//}
 		
 		TPQueryDispatcherHPQP dispatcher = new TPQueryDispatcherHPQP(this, Integer.parseInt(subargs[0]), Integer.parseInt(subargs[1]), 
-				Integer.parseInt(subargs[2]));
+				Integer.parseInt(subargs[5]), subargs.length > 5 ? subargs[5] : "");
 		server.setMessageHandler(ApplicationHandler.RESULTS, dispatcher);
 		workpool.submit(dispatcher);
 	} else {

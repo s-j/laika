@@ -30,7 +30,7 @@ public class DPWorkerQueryProcessing  implements Closeable, MessageHandler{
 		
 		Constants.USE_SKIPS = index.getIndexProperties().getProperty("use_skips").equals("true")?true:false;
 			
-		processor = new DPQueryProcessor(index, server, kernel.workpool);
+		processor = new DPQueryProcessor(index, server, kernel.workpool, myid);
 		terminated = false;
 	}
 	

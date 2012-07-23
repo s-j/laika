@@ -49,16 +49,16 @@ public class TPQueryDispatcherHPQP implements Runnable, Closeable, MessageHandle
 		long procTime;
 	}
 	
-	public TPQueryDispatcherHPQP(TPKernelHPQP kernel, int pre, int cnt, int maxconcurrent){
+	public TPQueryDispatcherHPQP(TPKernelHPQP kernel, int pre, int cnt, int maxconcurrent, String logsuffix){
 		try {
 			this.kernel = kernel;
 			this.index = (MasterIndex)kernel.index;
 			index.loadFastMaxScores(index.getStatistics().getNumberOfUniqueTerms());
 			this.server = kernel.server;
 			
-			querylogReader = new BufferedReader(new FileReader(kernel.index.getPath()+"/querylog.test"));
+			querylogReader = new BufferedReader(new FileReader(kernel.index.getPath()+"/querylog.test"+logsuffix));
 			//querylogReader = new BufferedReader(new FileReader("/home/simonj/logs/querylog_cleaned_old"));
-			preproc = new TPMasterQueryPreprocessingHPQP(TPKernel.testing ? index.getGlobalLexicon() : index.getInMemoryGlobalLexicon());
+			preproc = new TPMasterQueryPreprocessingHPQP(TPKernelHPQP.testing ? index.getGlobalLexicon() : index.getInMemoryGlobalLexicon());
 			outBuffer = new ArrayBlockingQueue<Triple<Integer,Integer,ChannelBuffer>>(maxconcurrent*4+50);
 			inBuffer = new ArrayBlockingQueue<ChannelBuffer>(maxconcurrent);
 			

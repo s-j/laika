@@ -23,11 +23,13 @@ public class DPQueryProcessor implements Closeable{
 	private Statistics globalStats;
 //	private ExecutorService workpool;
 	private NetworkServer server;
+	private int myid;
 	
-	public DPQueryProcessor(LocalIndex index, NetworkServer server, ExecutorService workpool) {
+	public DPQueryProcessor(LocalIndex index, NetworkServer server, ExecutorService workpool, int myid) {
 //		this.workpool = workpool;
 		this.server = server;
 		this.index = index;
+		this.myid = myid;
 		localStats = index.getLocalStatistics();
 		globalStats = index.getStatistics();
 		
@@ -35,11 +37,12 @@ public class DPQueryProcessor implements Closeable{
 		index.loadFastShortLexicon(localStats.getNumberOfUniqueTerms());    //access via FastShortLexicon.getLexiconEntry(termId);
 		inv = index.getInvertedIndex();										//access via inv.getPostingListIterator(slEntry)
 	}
-
+	
 	//@Override
 	public void processQuery(DPSubQuery sub) {
+		//System.out.println(System.currentTimeMillis() + " :" + myid + " got\n");
 		long time = System.currentTimeMillis();
-		//System.out.println("got " + sub.getQueryID());
+		
 		DPQueryState state = null;
 		switch (DPKernel.processortype){
 			case (DPKernel.MSDOR): state = new DPMSDQueryState(sub, globalStats, inv); break;	
@@ -50,15 +53,12 @@ public class DPQueryProcessor implements Closeable{
 		time = System.currentTimeMillis() - time;
 		state.close();
 		
-		//System.out.println(myid + " done processing");
 		sub.incrementProcessingTime(time);
-		
-		//System.out.println(myid + "done, sending results");
 		ChannelBuffer outbuffer = res.resultsToChannelBuffer(sub);
 		
 		res.close();
-		//System.out.println("ret " + sub.getQueryID());
 		server.write(0, outbuffer);
+		//System.out.println(System.currentTimeMillis() + " :" + myid + " ret\n");
 	}
 
 	@Override

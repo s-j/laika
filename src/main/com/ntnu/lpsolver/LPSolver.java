@@ -206,7 +206,16 @@ public class LPSolver {
 	
 	public static void main(String [] args) throws IOException {
 		//TODO: if any term or pair 0 -> 0!
-		double maxScores[] = {7.644408230007376, 6.323751317553276, 3.380148562453018, 2.0741925935027514, 0.42728409565352876};
+		double maxScores[] = {0.7, 0.6, 0.5};
+		int n = 3;
+		Edge[] edges = new Edge[n*(n-1)>>1];
+		edges[0] = new Edge(0, 1, 1.0);
+		edges[1] = new Edge(1, 2, 0.6);
+		LPSolver lp = new LPSolver();
+		double res = lp.calculateThreshold(maxScores.length, 2 ,maxScores, edges);
+		System.out.println(res);
+		
+		/*		double maxScores[] = {7.644408230007376, 6.323751317553276, 3.380148562453018, 2.0741925935027514, 0.42728409565352876};
 		int n = 5;
 		Edge[] edges = new Edge[n*(n-1)>>1];
 		edges[0] = new Edge(3, 4, 2.4782522099296305);
@@ -221,6 +230,6 @@ public class LPSolver {
 		LPSolver lp = new LPSolver();
 		double res = lp.calculateThreshold(maxScores.length, 9 ,maxScores, edges);
 		System.out.println(res);
-		
+		*/
 	}
 }

@@ -20,7 +20,7 @@ public class Test2 {
 	public static void simpleTest(String path, int k) throws Exception{
 		Constants.USE_SKIPS = true;
 		Constants.MAX_NUMBER_OF_RESULTS = k;
-		BufferedReader reader = new BufferedReader(new FileReader("/home/simonj/querylog_cleaned_new"));
+		BufferedReader reader = new BufferedReader(new FileReader("/mnt/data/data/ENVERIDX/querylog.test"));
 		Index index = new Index(path);
 		Statistics stats = index.getStatistics();
 		index.loadFastDocLengths(stats.getNumberOfDocuments());
@@ -31,21 +31,21 @@ public class Test2 {
 		String line; Query query;
 		int i = 0;
 		while ((line = reader.readLine()) != null ) {
-			
 			query = preproc.processQuery(line);
 			if (query == null) continue;
-			System.out.println(line);
+			System.out.println(i+" "+line);
 			QueryResults qr = proc.processQuery(query);
-			int[] d = qr.getDocids();
+			/*int[] d = qr.getDocids();
 			double[] s = qr.getScores();
 			for (int j=0; j< d.length; j++){
 				System.out.println(j +  "\t" + d[j] + "\t" + s[j]);
 			}
 			System.out.println();
-			if (++i==15) break;
-			//if (++i%1000 == 0) System.out.print(i+" ");
+			if (++i%1000 == 0) System.out.print(i+" ");*/
+			if (++i==30000) break;
 		}
-
+		System.out.println("done!");
+		index.close();
 	}
 
 	

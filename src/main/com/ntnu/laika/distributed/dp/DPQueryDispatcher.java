@@ -71,7 +71,7 @@ public class DPQueryDispatcher implements Runnable, Closeable, MessageHandler{
 			querylogReader = new BufferedReader(new FileReader(kernel.index.getPath()+"/querylog.test"+logsuffix));
 			//querylogReader = new BufferedReader(new FileReader("/home/simonj/logs/querylog_cleaned_old"));
 			preproc = new DPMasterQueryPreprocessing(DPKernel.testing ? index.getGlobalLexicon() : index.getInMemoryGlobalLexicon(), isand);
-			outBuffer = new ArrayBlockingQueue<Pair<Integer, ChannelBuffer[]>>(maxconcurrent*4+50);
+			outBuffer = new ArrayBlockingQueue<Pair<Integer, ChannelBuffer[]>>(maxconcurrent*4+50);//(maxconcurrent*4+50);
 			inBuffer = new ArrayBlockingQueue<ChannelBuffer>(maxconcurrent);
 			
 			this.pre = pre;
@@ -149,7 +149,7 @@ public class DPQueryDispatcher implements Runnable, Closeable, MessageHandler{
 				
 				try {
 					outBuffer.put(new Pair<Integer, ChannelBuffer[]>(qid, mq.toChannelBuffers(qid, 0)));	//merger set to 0
-					//System.out.println(qid + ":" + sq.query);
+					//System.out.println(qid + ":" + mq.query+":"+mq.numTerms);
 					qid++;
 				} catch (InterruptedException e) {
 					e.printStackTrace();
@@ -239,7 +239,7 @@ public class DPQueryDispatcher implements Runnable, Closeable, MessageHandler{
 						Triple<Integer, QueryResults, Long> p = RemoteQueryResults.fromChannelBuffer(reply);
 						qid = p.getFirst(); 
 						qresults[qid][qrecvcnts[qid]++] = p.getSecond();
-						//System.out.println("recv " + qid + " " + qrecvcnts[qid]);
+						//System.out.println(System.currentTimeMillis() + " recv " + qid);
 
 						//update qstats...
 						if (qid >= pre && qid < stopAfter){
@@ -250,6 +250,7 @@ public class DPQueryDispatcher implements Runnable, Closeable, MessageHandler{
 						}
 						
 						if (qrecvcnts[qid] == qwaitcnts[qid]) {
+							//System.out.println(System.currentTimeMillis() + " ret");
 							remcnt--; remslots++;
 							mergepool.submit(new QueryResultsMergeTask(qid));
 							
@@ -276,6 +277,7 @@ public class DPQueryDispatcher implements Runnable, Closeable, MessageHandler{
 						int numsubs = 0;
 						for (int i = 0; i < cb.length; i++){
 							if (cb[i] != null){
+								//System.out.println(System.currentTimeMillis() + " sent " + qid);
 								server.write(i+1, cb[i]);
 								numsubs++;
 							}
@@ -286,6 +288,7 @@ public class DPQueryDispatcher implements Runnable, Closeable, MessageHandler{
 						if (qid >= pre && qid < stopAfter) qstats[qid-pre].time = System.currentTimeMillis();
 												
 						//System.out.println("sending: " + qid + "( " + numsubs + ") remslots:" + remslots);					
+						//System.out.println(System.currentTimeMillis() + " got");
 						if (sent % 1000 == 0)
 							System.out.println(sent);
 					}
@@ -307,30 +310,33 @@ public class DPQueryDispatcher implements Runnable, Closeable, MessageHandler{
 		long sumTimes = 0l;
 		QStat qs;
 		
-		int[] qLenToNumNodes = new int[9];
-		int[] qLenToNumQueries = new int[9];
+		long[] qLenToNumNodes = new long[9];
+		long[] qLenToNumQueries = new long[9];
 		long[] qLenToTimes = new long[9];
-		long[] qLenToProcTimes = new long[9];
+		long[] qLenToTotProcTimes = new long[9];
 		long[] qLenToMaxProcTimes = new long[9];
-		int[] numNodesToNumQueries = new int[9];
+		long[] numNodesToNumQueries = new long[9];
 		
-		long sumProcTimes = 0l;
+		long sumTotProcTimes = 0l;
+		long sumNodes = 0l;
 		long sumMaxProcTimes = 0l;
 		
 		int qlen, qsubs;
 		for (int i=0; i<cnt; i++){
 			qs = qstats[i];
+			qsubs = qs.numNodes;
 			sumTimes+=qs.time;
-			sumProcTimes += qs.procTime/qs.numNodes;
+			sumTotProcTimes += qs.procTime;
+			sumNodes += qsubs;
 			sumMaxProcTimes += qs.maxProcTime;
+			//System.out.println(qs.procTime + " " + qs.numNodes);
 			qlen = qs.numTerms;
 			if (qlen > 8) qlen = 8;
-			qsubs = qs.numNodes;
 			
 			qLenToNumQueries[qlen]++;
 			qLenToNumNodes[qlen] += qsubs;
 			qLenToTimes[qlen] += qs.time;
-			qLenToProcTimes[qlen] += qs.procTime/qs.numNodes;
+			qLenToTotProcTimes[qlen] += qs.procTime;
 			qLenToMaxProcTimes[qlen] += qs.maxProcTime;
 				
 			numNodesToNumQueries[qsubs]++;
@@ -338,7 +344,9 @@ public class DPQueryDispatcher implements Runnable, Closeable, MessageHandler{
 		
 		System.out.println("res:Lat " + (double)sumTimes/cnt);
 		
-		System.out.println("res:AvgProcTime " + (double)sumProcTimes/cnt);
+		System.out.println("res:TotProcTime " + (double)sumTotProcTimes/cnt);
+		
+		System.out.println("res:AvgProcTime " + (double)sumTotProcTimes/sumNodes);
 		
 		System.out.println("res:MaxProcTime " + (double)sumMaxProcTimes/cnt);
 		
@@ -365,10 +373,16 @@ public class DPQueryDispatcher implements Runnable, Closeable, MessageHandler{
 			System.out.println(i+"\t"+(double)qLenToTimes[i]/qLenToNumQueries[i]);
 		}
 		System.out.println();
-		
-		System.out.println("res:qLenToProcTime");
+
+		System.out.println("res:qLenToTotProcTime");
 		for (int i=0; i<=8; i++){
-			System.out.println(i+"\t"+(double)qLenToProcTimes[i]/qLenToNumQueries[i]);
+			System.out.println(i+"\t"+(double)qLenToTotProcTimes[i]/qLenToNumQueries[i]);
+		}
+		System.out.println();
+		
+		System.out.println("res:qLenToAvgProcTime");
+		for (int i=0; i<=8; i++){
+			System.out.println(i+"\t"+(double)qLenToTotProcTimes[i]/qLenToNumNodes[i]);
 		}
 		System.out.println();
 		
