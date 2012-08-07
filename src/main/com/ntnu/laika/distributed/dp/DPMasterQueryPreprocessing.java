@@ -139,11 +139,11 @@ public class DPMasterQueryPreprocessing implements Closeable{
 				_lEntry = lexicon.lookup(term);
 				if (_lEntry == null) {
 					continue;
-				} else if ((maxScore = FastMaxScore.getMaxScore(_lEntry.getTermId())) <= 0.0d) {
-					_lEntry = null;
-					continue;
+				//} else if ((maxScore = FastMaxScore.getMaxScore(_lEntry.getTermId())) <= 0.0d) {
+				//	_lEntry = null;
+				//	continue;
 				} else {
-					_mqEntry = new MasterQueryEntry(_lEntry, 1, maxScore);
+					_mqEntry = new MasterQueryEntry(_lEntry, 1, FastMaxScore.getMaxScore(_lEntry.getTermId()));
 					entries[numTerms++] = _mqEntry;
 				}
 			}

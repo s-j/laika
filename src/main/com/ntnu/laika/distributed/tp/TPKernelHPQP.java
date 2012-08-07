@@ -97,7 +97,7 @@ public void boot(){
 		//}
 		
 		TPQueryDispatcherHPQP dispatcher = new TPQueryDispatcherHPQP(this, Integer.parseInt(subargs[0]), Integer.parseInt(subargs[1]), 
-				Integer.parseInt(subargs[5]), subargs.length > 5 ? subargs[5] : "");
+				Integer.parseInt(subargs[2]), subargs.length > 5 ? subargs[5] : "");
 		server.setMessageHandler(ApplicationHandler.RESULTS, dispatcher);
 		workpool.submit(dispatcher);
 	} else {

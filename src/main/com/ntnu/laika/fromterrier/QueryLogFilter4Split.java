@@ -6,20 +6,22 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import com.ntnu.laika.distributed.tp.TPMasterQueryPreprocessing.MasterQuery;
-import com.ntnu.laika.distributed.tp.TPMasterQueryPreprocessing;
+import com.ntnu.laika.distributed.dp.DPMasterQueryPreprocessing.MasterQuery;
+import com.ntnu.laika.distributed.dp.DPMasterQueryPreprocessing;
+//import com.ntnu.laika.distributed.tp.TPMasterQueryPreprocessingHPQP.MasterQuery;
+//mport com.ntnu.laika.distributed.tp.TPMasterQueryPreprocessingHPQP;
 import com.ntnu.laika.structures.MasterIndex;
 
 public class QueryLogFilter4Split {
 	public static void main(String args[]) throws IOException{
-		MasterIndex index = new MasterIndex("/mnt/data/data/ENVERIDX/8.HP.CUT.RYES/0");
-		//MasterIndex index = new MasterIndex("/mnt/data/data/ENVERIDX/8.DPRR.RNO/0");
+		//MasterIndex index = new MasterIndex("/mnt/data/data/ENVERIDX/8.HP.CUT.RYES/0");
+		MasterIndex index = new MasterIndex("/mnt/data/data/ENVERIDX/8.DPHP.RNO/0");
 		index.loadFastMaxScores(index.getStatistics().getNumberOfUniqueTerms());
-		//DPMasterQueryPreprocessing preproc = new DPMasterQueryPreprocessing(index.getGlobalLexicon(), false);
-		TPMasterQueryPreprocessing preproc = new TPMasterQueryPreprocessing(index.getGlobalLexicon(), false);
+		DPMasterQueryPreprocessing preproc = new DPMasterQueryPreprocessing(index.getGlobalLexicon(), true);
+		//TPMasterQueryPreprocessingHPQP preproc = new TPMasterQueryPreprocessingHPQP(index.getGlobalLexicon());
 
 		BufferedReader br= new BufferedReader(new FileReader("/mnt/data/data/ENVERIDX/querylog.test"));
-		BufferedWriter bw= new BufferedWriter(new FileWriter("/mnt/data/data/ENVERIDX/querylog.test_ext_tp"));
+		BufferedWriter bw= new BufferedWriter(new FileWriter("/mnt/data/data/ENVERIDX/querylog.test_ext_dp"));
 		
 		String q;
 		for (int i=0; i<30000;){
