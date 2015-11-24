@@ -1,7 +1,7 @@
 laika
 =====
 
-A distributed query processing framework written during my PhD study. Implements a term lexicon, a document dictionary and an inverted index with dynamic pruning and skipping. It supports query evaluation over a term-wise and document-wise partitioned index, with emphasis on pipelined query processing with a term-wise distributed index. The code base is given rather for inspiration and to share the implementations details than a further reuse – the implementation was done in a rush, with no unit tests and there are just too many things I would have done differently today.
+A distributed query processing framework written during my PhD study. Implements a term lexicon, a document dictionary and an inverted index with dynamic pruning and skipping. It supports query evaluation over a term- or document-wise partitioned index, with emphasis on pipelined query processing with a term-wise distributed index. The code base is given rather for inspiration and to share the implementations details than a further reuse – the implementation was done in a rush, with no unit tests and there are just too many things I would have done differently today.
 
 Different variants of this code have been used in the following papers:
 * Improving Dynamic Index Pruning via Linear Programming. Simon Jonassen. LSDS-IR@CIKM 2015: 21-25
